@@ -1,0 +1,15 @@
+1. Parse string
+2. Check that all necessary values are present
+3. Throw error if not
+4. Insert into new format
+5. Push to DB
+    a. Establish connection
+    b. Insert data
+    c. Verify
+
+
+Write unit tests
+1. Valid input
+2. Invalid input for missing fields
+
+Optimize if needed

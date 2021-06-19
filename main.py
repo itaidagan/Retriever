@@ -1,28 +1,46 @@
-'''
-1. Parse string
-2. Check that all necessary values are present
-3. Throw error if not
-4. Insert into new format
-5. Push to DB
-    a. Establish connection
-    b. Insert data
-    c. Verify
+import json
+from constants import REQUIRED_KEYS
+from input import *
 
 
-Optimize if needed
-'''
+class RetrieverData:
+    def __init__(self, json_string):
+        parsed_dict = json.loads(json_string)
+        if not all(key in parsed_dict for key in REQUIRED_KEYS):
+            raise ValueError
 
-SAMPLE_INPUT = '{"address" : "https://www.google.com ","content" : {"marks" : [{"text": "marks"},{"text": "season"},' \
-               '{"text": "foo"},{"text":"bar"}],"description" : "Some description"},"updated" : ' \
-               '"2021-02-26T08:21:20+00:00","author" : {"username" : "Bob","id" :"68712648721648271"},' \
-               '"id" : "543435435","created" : "2021-02-25T16:25:21+00:00","counters" : {"score" : 3,"mistakes" :0},' \
-               '"type" : "main"} '
+        author_dict = parsed_dict["author"]
+        if not all (key in author_dict for key in ["username", "id"]):
+            raise ValueError
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+        self.path = parsed_dict["address"]
+        self.items = self.init_items(parsed_dict)
+        self.body = self.init_body(parsed_dict)
+        self.id = parsed_dict["id"]
+        self.author_name = parsed_dict["author"]["username"]
+        self.author_id = parsed_dict["author"]["id"]
 
+    @staticmethod
+    def init_items(parsed_dict):
+        try:
+            return parsed_dict["content"]["marks"]["text"]
+        except:
+            return None
+
+    @staticmethod
+    def init_body(parsed_dict):
+        try:
+            return parsed_dict["content"]["description"]
+        except:
+            return None
+
+
+def parse_and_print_json(input_json):
+    parsed_dict = json.loads(input_json)
+    print(parsed_dict)
+    for key, val in parsed_dict.items():
+        print(f"The pair is {key}: {val}")
 
 
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    item = RetrieverData(GOOD_INPUT)
