@@ -2,6 +2,7 @@ import json
 from constants import REQUIRED_KEYS, DATETIME_FORMAT
 from input import *
 from datetime import datetime
+import sys
 
 
 class RetrieverData:
@@ -85,8 +86,10 @@ class RetrieverData:
 
 
 if __name__ == '__main__':
-    item = RetrieverData(GOOD_INPUT)
+    # item = RetrieverData(GOOD_INPUT)
     # item2 = RetrieverData(MISSING_ADDRESS)
     # item3 = RetrieverData(MISSING_AUTHOR_ID)
-    output = item.to_target_json()
-    print(output)
+    print(sys.argv[0])
+    item = RetrieverData(sys.argv[1])
+    print(item.to_target_json())
+    # print(output)
