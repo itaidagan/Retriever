@@ -1,8 +1,9 @@
 import json
-from constants import REQUIRED_KEYS, DATETIME_FORMAT
+from constants import *
 from input import *
 from datetime import datetime
 import sys
+import psycopg2
 
 
 class RetrieverData:
@@ -27,8 +28,8 @@ class RetrieverData:
         self.author_id = parsed_dict["author"]["id"]
 
         created_datetime = datetime.strptime(parsed_dict["created"], DATETIME_FORMAT)
-        self.created_date = created_datetime.date()
-        self.created_time = created_datetime.time()
+        self.created_date = created_datetime.strftime(DATE_FORMAT)
+        self.created_time = created_datetime.strftime(TIME_FORMAT)
 
         self.updated_date, self.updated_time = self.init_updated(parsed_dict)
 
@@ -63,7 +64,9 @@ class RetrieverData:
     def init_updated(parsed_dict):
         if "updated" in parsed_dict:
             updated_datetime = datetime.strptime(parsed_dict["updated"], DATETIME_FORMAT)
-            return updated_datetime.date(), updated_datetime.time()
+            updated_date = updated_datetime.strftime(DATE_FORMAT)
+            updated_time = updated_datetime.strftime(TIME_FORMAT)
+            return updated_date, updated_time
         return None, None
 
     def to_target_json(self):
@@ -84,12 +87,34 @@ class RetrieverData:
         output_dict["counters_total"] = self.counters_total
         return output_dict
 
+    def insert_to_db(self):
+        self.to_target_json()
+
+        query = "INSERT INTO retriever(id, data) " \
+                "VALUES(%s, %s);"
+        conn = None
+        try:
+            conn = psycopg2.connect(user="postgres", password="admin")
+            cur = conn.cursor()
+            data = self.to_target_json()
+            data_as_json = json.dumps(data)
+            cur.execute(query, (self.id, data_as_json))
+            conn.commit()
+            cur.close()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print("Unable to insert to DB")
+            print(error)
+        finally:
+            if conn is not None:
+                conn.close()
+
 
 if __name__ == '__main__':
-    # item = RetrieverData(GOOD_INPUT)
+    item = RetrieverData(GOOD_INPUT)
     # item2 = RetrieverData(MISSING_ADDRESS)
     # item3 = RetrieverData(MISSING_AUTHOR_ID)
-    print(sys.argv[0])
-    item = RetrieverData(sys.argv[1])
+    # print(sys.argv[0])
+    # item = RetrieverData(sys.argv[1])
     print(item.to_target_json())
+    item.insert_to_db()
     # print(output)
