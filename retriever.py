@@ -27,9 +27,13 @@ class RetrieverData:
         self.author_name = parsed_dict["author"]["username"]
         self.author_id = parsed_dict["author"]["id"]
 
-        created_datetime = datetime.strptime(parsed_dict["created"], DATETIME_FORMAT)
-        self.created_date = created_datetime.strftime(DATE_FORMAT)
-        self.created_time = created_datetime.strftime(TIME_FORMAT)
+        try:
+            created_datetime = datetime.strptime(parsed_dict["created"], DATETIME_FORMAT)
+            self.created_date = created_datetime.strftime(DATE_FORMAT)
+            self.created_time = created_datetime.strftime(TIME_FORMAT)
+        except ValueError as e:
+            print(f"Unable to parse 'created' timestamp, make sure format is {DATETIME_FORMAT}")
+            raise ValueError
 
         self.updated_date, self.updated_time = self.init_updated(parsed_dict)
 
@@ -63,10 +67,14 @@ class RetrieverData:
     @staticmethod
     def init_updated(parsed_dict):
         if "updated" in parsed_dict:
-            updated_datetime = datetime.strptime(parsed_dict["updated"], DATETIME_FORMAT)
-            updated_date = updated_datetime.strftime(DATE_FORMAT)
-            updated_time = updated_datetime.strftime(TIME_FORMAT)
-            return updated_date, updated_time
+            try:
+                updated_datetime = datetime.strptime(parsed_dict["updated"], DATETIME_FORMAT)
+                updated_date = updated_datetime.strftime(DATE_FORMAT)
+                updated_time = updated_datetime.strftime(TIME_FORMAT)
+                return updated_date, updated_time
+            except ValueError:
+                print(f"Unable to parse 'updated' timestamp, make sure format is {DATETIME_FORMAT}")
+                raise ValueError
         return None, None
 
     def to_target_json(self):
