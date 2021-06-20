@@ -8,7 +8,12 @@ import config
 
 class RetrieverData:
     def __init__(self, json_string):
-        parsed_dict = json.loads(json_string)
+        try:
+            parsed_dict = json.loads(json_string)
+        except json.decoder.JSONDecodeError as error:
+            print("Unable to parse JSON, please verify it is correctly formatted")
+            raise error
+
         if not all(key in parsed_dict for key in constants.REQUIRED_KEYS):
             missing_keys = list(filter(lambda x: x not in parsed_dict, constants.REQUIRED_KEYS))
             print("The following keys must be present in input json")
@@ -127,6 +132,6 @@ if __name__ == '__main__':
         print("Must provide a input in the following format")
         print("python retriever.py <input json>")
         raise ValueError
-    
+
     item = RetrieverData(sys.argv[1])
     item.insert_to_db()

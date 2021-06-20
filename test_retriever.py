@@ -1,8 +1,6 @@
 import unittest
 import retriever
 import json
-import config
-import psycopg2
 
 
 class TestRetriever(unittest.TestCase):
@@ -31,6 +29,12 @@ class TestRetriever(unittest.TestCase):
                           '"counters_total": 3}'
         output_dict = retriever.RetrieverData(test_input).to_target_dict()
         self.assertEqual(json.dumps(output_dict), expected_output)
+
+    def test_json_parsing_error(self):
+        test_input = '{"address" : "https://www.google.com ","author" : {"username" : "Bob","id" ' \
+                     ':"68712648721648271", "id" : "543435435","created" : "2021-02-25T16:25:21+00:00","counters" : ' \
+                     '{"score" : 3,"mistakes" :0}}'
+        self.assertRaises(json.decoder.JSONDecodeError, retriever.RetrieverData, test_input)
 
     def test_value_error_no_address(self):
         test_input = '{"addres" : "https://www.google.com ","author" : {"username" : "Bob","id" ' \
