@@ -123,5 +123,10 @@ class RetrieverData:
 
 
 if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Must provide a input in the following format")
+        print("python retriever.py <input json>")
+        raise ValueError
+    
     item = RetrieverData(sys.argv[1])
     item.insert_to_db()
