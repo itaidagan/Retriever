@@ -17,14 +17,18 @@ class TestRetriever(unittest.TestCase):
                           '"68712648721648271", "created_date": "2021-02-25", "created_time": "16:25:21+0000", ' \
                           '"updated_date": "2021-02-26", "updated_time": "08:21:20+0000", "counters_total": 4}'
 
-        output_dict = retriever.RetrieverData(test_input).to_target_json()
+        output_dict = retriever.RetrieverData(test_input).to_target_dict()
         self.assertEqual(json.dumps(output_dict), expected_output)
 
     def test_parsing_minimal_json(self):
         test_input = '{"address" : "https://www.google.com ","author" : {"username" : "Bob","id" ' \
                      ':"68712648721648271"}, "id" : "543435435","created" : "2021-02-25T16:25:21+00:00","counters" : ' \
                      '{"score" : 3,"mistakes" :0}}'
-        _ = retriever.RetrieverData(test_input)
+        expected_output = '{"path": "https://www.google.com ", "id": "543435435", "author_name": "Bob", "author_id": ' \
+                          '"68712648721648271", "created_date": "2021-02-25", "created_time": "16:25:21+0000", ' \
+                          '"counters_total": 3}'
+        output_dict = retriever.RetrieverData(test_input).to_target_dict()
+        self.assertEqual(json.dumps(output_dict), expected_output)
 
     def test_value_error_no_address(self):
         test_input = '{"addres" : "https://www.google.com ","author" : {"username" : "Bob","id" ' \

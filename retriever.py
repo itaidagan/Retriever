@@ -1,6 +1,5 @@
 import json
 from constants import *
-from input import *
 from datetime import datetime
 import sys
 import psycopg2
@@ -77,7 +76,7 @@ class RetrieverData:
                 raise ValueError
         return None, None
 
-    def to_target_json(self):
+    def to_target_dict(self):
         output_dict = dict()
         output_dict["path"] = self.path
         if self.items:
@@ -96,7 +95,7 @@ class RetrieverData:
         return output_dict
 
     def insert_to_db(self):
-        self.to_target_json()
+        self.to_target_dict()
 
         query = "INSERT INTO retriever(id, data) " \
                 "VALUES(%s, %s);"
@@ -104,7 +103,7 @@ class RetrieverData:
         try:
             conn = psycopg2.connect(user="postgres", password="admin")
             cur = conn.cursor()
-            data = self.to_target_json()
+            data = self.to_target_dict()
             data_as_json = json.dumps(data)
             cur.execute(query, (self.id, data_as_json))
             conn.commit()
@@ -118,11 +117,5 @@ class RetrieverData:
 
 
 if __name__ == '__main__':
-    item = RetrieverData(GOOD_INPUT)
-    # item2 = RetrieverData(MISSING_ADDRESS)
-    # item3 = RetrieverData(MISSING_AUTHOR_ID)
-    # print(sys.argv[0])
-    # item = RetrieverData(sys.argv[1])
-    print(item.to_target_json())
+    item = RetrieverData(sys.argv[1])
     item.insert_to_db()
-    # print(output)
