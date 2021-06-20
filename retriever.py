@@ -1,15 +1,16 @@
 import json
-from constants import *
+import constants
 from datetime import datetime
 import sys
 import psycopg2
+import config
 
 
 class RetrieverData:
     def __init__(self, json_string):
         parsed_dict = json.loads(json_string)
-        if not all(key in parsed_dict for key in REQUIRED_KEYS):
-            missing_keys = list(filter(lambda x: x not in parsed_dict, REQUIRED_KEYS))
+        if not all(key in parsed_dict for key in constants.REQUIRED_KEYS):
+            missing_keys = list(filter(lambda x: x not in parsed_dict, constants.REQUIRED_KEYS))
             print("The following keys must be present in input json")
             print(missing_keys)
             raise ValueError
@@ -27,11 +28,11 @@ class RetrieverData:
         self.author_id = parsed_dict["author"]["id"]
 
         try:
-            created_datetime = datetime.strptime(parsed_dict["created"], DATETIME_FORMAT)
-            self.created_date = created_datetime.strftime(DATE_FORMAT)
-            self.created_time = created_datetime.strftime(TIME_FORMAT)
+            created_datetime = datetime.strptime(parsed_dict["created"], constants.DATETIME_FORMAT)
+            self.created_date = created_datetime.strftime(constants.DATE_FORMAT)
+            self.created_time = created_datetime.strftime(constants.TIME_FORMAT)
         except ValueError as e:
-            print(f"Unable to parse 'created' timestamp, make sure format is {DATETIME_FORMAT}")
+            print(f"Unable to parse 'created' timestamp, make sure format is {constants.DATETIME_FORMAT}")
             raise ValueError
 
         self.updated_date, self.updated_time = self.init_updated(parsed_dict)
@@ -67,12 +68,12 @@ class RetrieverData:
     def init_updated(parsed_dict):
         if "updated" in parsed_dict:
             try:
-                updated_datetime = datetime.strptime(parsed_dict["updated"], DATETIME_FORMAT)
-                updated_date = updated_datetime.strftime(DATE_FORMAT)
-                updated_time = updated_datetime.strftime(TIME_FORMAT)
+                updated_datetime = datetime.strptime(parsed_dict["updated"], constants.DATETIME_FORMAT)
+                updated_date = updated_datetime.strftime(constants.DATE_FORMAT)
+                updated_time = updated_datetime.strftime(constants.TIME_FORMAT)
                 return updated_date, updated_time
             except ValueError:
-                print(f"Unable to parse 'updated' timestamp, make sure format is {DATETIME_FORMAT}")
+                print(f"Unable to parse 'updated' timestamp, make sure format is {constants.DATETIME_FORMAT}")
                 raise ValueError
         return None, None
 
@@ -101,7 +102,11 @@ class RetrieverData:
                 "VALUES(%s, %s);"
         conn = None
         try:
-            conn = psycopg2.connect(user="postgres", password="admin")
+            conn = psycopg2.connect(
+                host=config.HOST,
+                database=config.DATABASE,
+                user="postgres",
+                password="admin")
             cur = conn.cursor()
             data = self.to_target_dict()
             data_as_json = json.dumps(data)
@@ -111,6 +116,7 @@ class RetrieverData:
         except (Exception, psycopg2.DatabaseError) as error:
             print("Unable to insert to DB")
             print(error)
+            raise error
         finally:
             if conn is not None:
                 conn.close()

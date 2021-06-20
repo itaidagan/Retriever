@@ -1,6 +1,8 @@
 import unittest
 import retriever
 import json
+import config
+import psycopg2
 
 
 class TestRetriever(unittest.TestCase):
